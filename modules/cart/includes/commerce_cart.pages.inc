@@ -23,8 +23,11 @@ function commerce_cart_checkout_router() {
     drupal_set_message(t('Add some items to your cart and then try checking out.'));
     drupal_goto(variable_get('commerce_checkout_empty_redirect', ''));
   }
-
-  drupal_goto('checkout/' . $order->order_id);
+  $destination = array(
+    'checkout_payment' => '/payment',
+    'checkout_complete' => '/complete',
+  );
+  drupal_goto('checkout/' . $order->order_id . (isset($destination[$order->status]) ? $destination[$order->status] : ''));
 }
 
 /**
