@@ -56,6 +56,26 @@ function commerce_product_product_form($form, &$form_state, $product) {
     '#weight' => 35,
   );
 
+  $form['change_type'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Change product type'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => 39,
+  );
+
+  $form['change_type']['new_type'] = array(
+    '#type' => 'select',
+    '#title' => t('New product type'),
+    '#description' => t('Change the product type. Beware that this will cause fields on the old type that are not shared with the new type to become inaccessible for this product.'),
+    '#options' => array(),
+    '#default_value' => $product->type,
+  );
+
+  foreach (commerce_product_types() as $key => $type) {
+    $form['change_type']['new_type']['#options'][$key] = $type->name;
+  }
+
   $form['actions'] = array(
     '#type' => 'container',
     '#attributes' => array('class' => array('form-actions')),
@@ -136,6 +156,15 @@ function commerce_product_product_form_submit($form, &$form_state) {
 
   // Notify field widgets.
   field_attach_submit('commerce_product', $product, $form, $form_state);
+
+  // Change the product type if a new type was chosen.
+  if ($form_state['values']['new_type'] && $form_state['values']['new_type'] != $product->type) {
+    drupal_set_message(t('Product type changed from %old_type to %new_type', array(
+      '%old_type' => $product->type,
+      '%new_type' => $form_state['values']['new_type'],
+    )));
+    $product->type = $form_state['values']['new_type'];
+  }
 
   // Save the product.
   commerce_product_save($product);
