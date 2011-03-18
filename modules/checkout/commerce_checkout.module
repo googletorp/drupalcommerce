@@ -129,6 +129,8 @@ function commerce_checkout_theme() {
     'commerce_checkout_review' => array(
       'render element' => 'form',
       'file' => 'includes/commerce_checkout.pages.inc',
+      'path' => drupal_get_path('module', 'commerce_checkout') . '/theme',
+      'template' => 'commerce-checkout-review',
     ),
   );
 }
