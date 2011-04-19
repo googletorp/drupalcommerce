@@ -820,7 +820,14 @@ function commerce_customer_field_widget_form(&$form, &$form_state, $field, $inst
     $profiles = commerce_customer_profile_load_multiple($profile_ids);
 
     if (empty($profiles)) {
-      $profiles[0] = commerce_customer_profile_new($profile_type['type']);
+      if (isset($form_state['commerce_customer_profile_manager_validate_profile_id'])) {
+        // We have saved a new profile during ajax, and need to add it like
+        // a new profile to maintain form data.
+        $profiles[0] = commerce_customer_profile_load($form_state['commerce_customer_profile_manager_validate_profile_id']);
+      }
+      if (!isset($profiles[0]) || empty($profiles[0])) {
+        $profiles[0] = commerce_customer_profile_new($profile_type['type']);
+      }
     }
 
     // Update the base form element array to use the proper theme and validate
@@ -924,6 +931,14 @@ function commerce_customer_profile_manager_validate($element, &$form_state, $for
   }
 
   form_set_value($element, $value, $form_state);
+
+  // If we started with a new profile, and the form needs to be rebuilt, we
+  // need to save the new profile id directly on the $form_state. The reason
+  // is that $form_state['values'] is unset when the form is rebuilt. Else a
+  // new profile is created for each ajax callback that rebuilds the form.
+  if (empty($element['profiles'][$key]['profile']['#value']->profile_id)) {
+    $form_state['commerce_customer_profile_manager_validate_profile_id'] = $profile->profile_id;
+  }
 }
 
 /**
